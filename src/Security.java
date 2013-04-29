@@ -8,15 +8,22 @@
  * @author Rusty-Mac
  */
 import java.math.BigInteger;
+import java.util.Random;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.*;
+import javax.imageio.*;
 
 public class Security extends javax.swing.JFrame {
 
     /**
      * Creates new form Security
      */
+    //Needed global variables and instantiations.
     static String output = "";
-    static long IV = 2;
+    static long IV = 2; int intLength = 4;
     private static int[] key = new int[4];
+    Random rand = new Random();
 
     public Security() {
         initComponents();
@@ -36,10 +43,20 @@ public class Security extends javax.swing.JFrame {
         outputBox = new javax.swing.JTextArea();
         jToggleButton1 = new javax.swing.JToggleButton();
         input = new javax.swing.JTextField();
+        IVinput = new javax.swing.JTextField();
+        IVdecode = new javax.swing.JTextField();
+        jToggleButton2 = new javax.swing.JToggleButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        stegaInput = new javax.swing.JTextArea();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        stegaInside = new javax.swing.JTextArea();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        stegaOutput = new javax.swing.JTextArea();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        go.setText("jButton1");
+        go.setText("Encrypt");
         go.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 goActionPerformed(evt);
@@ -50,7 +67,7 @@ public class Security extends javax.swing.JFrame {
         outputBox.setRows(5);
         jScrollPane1.setViewportView(outputBox);
 
-        jToggleButton1.setText("jToggleButton1");
+        jToggleButton1.setText("Decrypt");
         jToggleButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jToggleButton1ActionPerformed(evt);
@@ -59,210 +76,491 @@ public class Security extends javax.swing.JFrame {
 
         input.setText("jTextField1");
 
+        IVinput.setText("*");
+        IVinput.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                IVinputActionPerformed(evt);
+            }
+        });
+
+        IVdecode.setText("*");
+
+        jToggleButton2.setText("Store In Image");
+        jToggleButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton2ActionPerformed(evt);
+            }
+        });
+
+        stegaInput.setColumns(20);
+        stegaInput.setRows(5);
+        jScrollPane2.setViewportView(stegaInput);
+
+        stegaInside.setColumns(20);
+        stegaInside.setRows(5);
+        jScrollPane3.setViewportView(stegaInside);
+
+        stegaOutput.setColumns(20);
+        stegaOutput.setRows(5);
+        jScrollPane4.setViewportView(stegaOutput);
+
+        jButton1.setText("Grab From Image");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(input)
-                    .add(jScrollPane1)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(input, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 400, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(layout.createSequentialGroup()
+                            .addContainerGap()
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 394, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 126, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 134, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                        .add(layout.createSequentialGroup()
+                            .add(19, 19, 19)
+                            .add(go)
+                            .add(18, 18, 18)
+                            .add(IVinput, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(IVdecode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jToggleButton1)))
                     .add(layout.createSequentialGroup()
-                        .add(72, 72, 72)
-                        .add(go)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 79, Short.MAX_VALUE)
-                        .add(jToggleButton1)))
-                .addContainerGap())
+                        .add(49, 49, 49)
+                        .add(jToggleButton2)
+                        .add(18, 18, 18)
+                        .add(jButton1)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(16, 16, 16)
+                .add(15, 15, 15)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(go)
-                    .add(jToggleButton1))
+                    .add(jToggleButton1)
+                    .add(IVinput, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(IVdecode, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(input, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
+                .add(input, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 115, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .add(30, 30, 30)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jToggleButton2)
+                    .add(jButton1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    //Calls the encipher algorithm after the CBC is implemented.
     private static long[] encode(final long v[]) {
         long[] a = v;
+        //CBC code to XOR plaintext with IV
         a[0] = a[0] ^ IV;
         a[1] = a[1] ^ IV;
         a = encipher(a);
+        //Sets IV equal to the cipher text
         IV = a[0];
         return a;
     }
+
+    //method to run the decipher algorithm , not needed but implemented for consistency.
     private static long[] decode(final long v[]) {
         long[] a = v;
         a = decipher(a);
         return a;
     }
 
+    //Method to convert a string to a string hex.
     public static String toHex(String arg) {
+        //Returns a formated string of %x (for hex) and uses BitInteger for conversion.
         return String.format("%x",
                 new BigInteger(arg.getBytes(/* YOUR_CHARSET? */)));
     }
 
+    //Method to convert a hex string to a string.
     public static String fromHex(String hex) {
+        //creates a new string builder.
         StringBuilder output = new StringBuilder();
+        //loops for the length of hex.
         for (int i = 0; i < hex.length(); i += 2) {
+            //removes the first two character.
             String str = hex.substring(i, i + 2);
+            //Uses the Integer method to convert the two characters to string from hex.
             output.append((char) Integer.parseInt(str, 16));
         }
         return output.toString();
     }
 
+    //Encipher Algorithm
     private static long[] encipher(final long v[]) {
+        //Instantiate the delta value, th sum, L and R of the cipher and A and B but those arent needed.
         int delta = 0x9e3779B9;
         int sum = 0;
-        int x = 0;
-        int IV1 = 2, IV2 = 2;
-        // while (x < v.length) {
         long a = v[0], b = v[1];
         long L = a;// ^ IV1;
         long R = b;// ^ IV2;
-        // IV1 = v[x];
-        // IV2 = v[x+1];
+        //Loops for 32 cycles.
         for (int i = 1; i <= 32; i++) {
+            //Adds sum to delta.
             sum += delta;
+            //Creates the L and R values
             L += ((R << 4) + key[0]) ^ (R + sum) ^ ((R >> 5) + key[1]);
             R += ((L << 4) + key[2]) ^ (L + sum) ^ ((L >> 5) + key[3]);
         }
+        //Stores the values and return the 2 length array.
         v[0] = L;
         v[1] = R;
-        // x+=2;
-        // }
         return v;
-
     }
 
+    private byte[] getData(BufferedImage image) {
+        //returns an array of bytes
+        //getRaster gets hte pixel information, Databuffer gets them all into one array, getdata gets the bytes. 
+        return ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+    }
+
+    private byte[] textByte(String input) {
+        //gets the message bytes
+        byte[] message = input.getBytes();
+        //gets the bytes of the message length
+        byte[] lengthMessage = bitConversion(message.length);
+        //gets the total length of both
+        int total = lengthMessage.length + message.length;
+        //sets a new array equal to the size of those two array lengths
+        byte[] messageBytes = new byte[total];
+        //copies the array length message to the message bytes
+        //Then copies the message to messageBytes after the lengthMessage
+        System.arraycopy(lengthMessage, 0, messageBytes, 0, lengthMessage.length);
+        System.arraycopy(message, 0, messageBytes, lengthMessage.length,message.length);
+        //returns the final array
+        return messageBytes;
+    }
+    private BufferedImage placeText(BufferedImage imageBuffer, String txt) {
+        //convert all data to arrays of bytes
+        byte imageBytes[] = getData(imageBuffer);
+        int offset = 0;
+        byte text[] = textByte(txt);
+        //loops through the bytes to put in
+        for (int i = 0; i < text.length; i++)
+        {
+            for (int bit = 7; bit >= 0; offset++) //loops through the 8 bits of a byte
+            {
+                //ANDing imageBytes and 0xFE gives XXXXXXX0 as byte info, then ORs with the text shifted over so its either 00000000 or 00000001
+                imageBytes[offset] = (byte) ((imageBytes[offset] & 0xFE) | (text[i] >>> bit));
+                bit--;
+            }
+        }
+        return imageBuffer;
+    }
+
+    private void saveImage(BufferedImage imageBuffer, File file) {
+        try {
+            //delete the old file and writes a new one
+            file.delete();
+            ImageIO.write(imageBuffer, "png", file);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    private byte[] bitConversion(int i) {
+        //only using 4 bytes
+        byte[] bytes = new byte[4];
+        //establishes the four offsets used
+        int[] offsets = {0xFF0000, 0x00FF0000, 0x0000FF00, 0x000000FF};
+        for (int x = 0; x < 4; x++) {
+            //converts the ints to bytes. 
+            bytes[x] = (byte) ((i & offsets[x]) >>> 24 - (x * 8));
+        }
+        return (bytes);
+    }
+    //Algorithm for deciphering
+
     private static long[] decipher(final long v[]) {
+        //Instantiates necessary variables
         int delta = 0x9e3779b9;
         int sum = delta << 5;
         int x = 0;
-        int IV1 = 2, IV2 = 2;
+        //Begins a loop over hte length of the input, from a previous implementation, does nothing currently.
         while (x < v.length) {
+            //Establishes the L and R values
             long L = v[x];
             long R = v[x + 1];
             // int i1 = L, i2 = R;
+            //Loops 32 cycles to create the new L R and Sum data
             for (int i = 1; i <= 32; i++) {
                 R -= ((L << 4) + key[2]) ^ (L + sum) ^ ((L >> 5) + key[3]);
                 L -= ((R << 4) + key[0]) ^ (R + sum) ^ ((R >> 5) + key[1]);
                 sum -= delta;
             }
+            //Stores the values
             v[x] = L;// ^ IV1;
             v[x + 1] = R;// ^ IV2;
             // IV1 = v[x];
             // IV2 = v[x+1];
+            //Was used in the loop in old implementation
             x += 2;
         }
+        //Returns the value.
         return v;
     }
     private void goActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goActionPerformed
+        //Button Encrypt
+        output = encodingAlgorithm(input.getText());
+        outputBox.setText(output);
+    }//GEN-LAST:event_goActionPerformed
+    private byte[] messageSize(byte[] image) {
+        int messageSize = 0;
+        //loops through the first 32 bits of the message where we stored hte length of the message.
+        for (int i = 0; i < 32; i++)
+        {
+            //message size gets shifted left 1, then ored with 00000000 or 00000001 which will increment the message size
+            //since messageSize was stored as an array of bits it is returned as an array of bits.
+            messageSize = (messageSize << 1) | (image[i] & 1);
+        }
+        byte[] results = new byte[messageSize];
+        return results;
+    }
+    private byte[] getText(byte[] image, byte[] result) {
+        int offset = 32;
+        //loop through each byte of text
+        for (int b = 0; b < result.length; ++b) {
+            //loop through each bit within a byte
+            for (int i = 0; i < 8; i++) {
+                //shift result over 1, and or it with image[offset] & 1 
+                //this will build the byte and then it moves to the next one.
+                result[b] = (byte) ((result[b] << 1) | (image[offset] & 1));
+                offset++;
+            }
+        }
+        return result;
+    }
+
+    private String encodingAlgorithm(String inputString) {
+        //4 Keys used in the encryption
         key[0] = 0xA56BABCD;
         key[1] = 0x00000000;
         key[2] = 0xFFFFFFFF;
         key[3] = 0xABCDEF01;
+        //Resets the output
         output = "";
-        IV = 2;
-        String test = input.getText();
+        //Generates a random IV if the user hasnt selected their own.
+        if (IVinput.getText().compareTo("*") == 0) {
+            IVinput.setText(Integer.toString(rand.nextInt(100)));
+        }
+        //Grabs the IV
+        IV = Integer.parseInt(IVinput.getText());
+        //Grabs the text
+        String test = inputString;
+        //Sets up a loop on the incoming text until the text is gone.
         while (test.length() > 1) {
+            //Creates a string of arrays size 2 which will be the Left and Right.
             String[] in = new String[2];
+            //Starts a for loop to fill the two string arrays
             for (int x = 0; x < 2; x++) {
+                //initializes the array space
                 in[x] = "";
+                //creates a for loop that will take in the first 4 characters of the text and remove them.
                 for (int i = 0; i < 4; i++) {
+                    //try catch block in there to catch for remainders of the string with less then 4 characters
                     try {
                         in[x] = in[x] + test.charAt(0);
                         test = test.substring(1);
                     } catch (Exception ie) {
                     }
                 }
+                //Prints out the array of 4 characters
                 System.out.print(in[x] + " ");
+                //If in[0] or in[1] is empty, fill its with 4 spaces.
                 if (in[x].isEmpty()) {
                     in[x] = "    ";
                 }
+                //Converts the two strings into hex to be able to convert the string to long.
                 in[x] = toHex(in[x]);
                 in[x] = toHex(in[x]);
+                //prints out the new hex string.
                 System.out.print(in[x] + " ");
             }
+            //creates a new long array of size 2
             long[] a = new long[2];
-            {
-                a[0] = Long.parseLong(in[0]);
-                a[1] = Long.parseLong(in[1]);
-            }
-            a = encode(a);
-            in[0] = Long.toString(a[0]);
-            in[1] = Long.toString(a[1]);
-            System.out.println(in[0] + " " + in[1]);
+            //fills the two arrays with the parse of the hex characters from before.
             a[0] = Long.parseLong(in[0]);
             a[1] = Long.parseLong(in[1]);
+            //runs the encode algorithm on array a.
+            a = encode(a);
+            //fills the string array in with the parsed longs.
+            in[0] = Long.toString(a[0]);
+            in[1] = Long.toString(a[1]);
+            //prints out the encrypted hex values for confirmation.
+            System.out.println(in[0] + " " + in[1]);
+            //sets output equal to 4 encrypted chars + * + 4 encrypted chars + * so that when it will
+            //be decrypted, the strings can be parsed in regardless of length.
             output = output + in[0] + "*" + in[1] + "*";
             //commented section goes here
         }
+        //attachs a / to the end of the encrypted file and sets the outputBox to that string.
         output = output + "/";
-                    outputBox.setText(output);
-    }//GEN-LAST:event_goActionPerformed
+        return output;
+    }
 
-    private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
+    private String decodingAlgorithm(String inputString) {
+        //Keys used for decrypting
         key[0] = 0xA56BABCD;
         key[1] = 0x00000000;
         key[2] = 0xFFFFFFFF;
         key[3] = 0xABCDEF01;
+        //Rsets output
         output = "";
-        IV = 2;
-        String test = outputBox.getText();
+        //Checks to see if they use their own IV otherwise creates a random one
+        if (IVdecode.getText().compareTo("*") == 0) {
+            IVdecode.setText(IVinput.getText());
+        }
+        //Set IV equal to IVdecode
+        IV = Integer.parseInt(IVdecode.getText());
+        //Grabs the input string
+        String test = inputString;
+        //Loops until the input is empty.
         while (test.length() > 1) {
+            //creates a new string array
             String[] in = new String[2];
+            //creates a for loop to fill the array
             for (int x = 0; x < 2; x++) {
                 in[x] = "";
+                //Checks to see if the input is * or / in which case it skips it.
                 String c = String.valueOf(test.charAt(0));
-                while(!c.equals("*")) {
+                while (!c.equals("*")) {
                     c = String.valueOf(test.charAt(0));
                     if (c.equals("/") || c.equals("*")) {
                         test = test.substring(1);
                         break;
                     }
                     try {
+                        //Takes in the first character, then removes it from the input.
                         in[x] = in[x] + test.charAt(0);
                         test = test.substring(1);
                     } catch (Exception ie) {
                     }
                 }
+                //Replaces an empty array as 2 are needed for the algorithm.
                 if (in[x].isEmpty()) {
                     in[x] = "    ";
                 }
                 System.out.print(in[x] + " ");
             }
+            //creates a 2 length long array which will be used in the decoding algorithm.
             long[] a = new long[2];
-            {
-                a[0] = Long.parseLong(in[0]);
-                a[1] = Long.parseLong(in[1]);
-            }
+            //fills them
+            a[0] = Long.parseLong(in[0]);
+            a[1] = Long.parseLong(in[1]);
+            //sets a blank long to the current cipher text
             long IV2 = a[0];
+            //decodes the array
             a = decode(a);
+            //Xors the data with the IV
             a[0] = a[0] ^ IV;
             a[1] = a[1] ^ IV;
+            //Sets the IV equal to IV2 from before
             IV = IV2;
+            //Converts the long to a string
             in[0] = Long.toString(a[0]);
-	    in[1] = Long.toString(a[1]);
+            in[1] = Long.toString(a[1]);
+            //Converts the hex string to hex string then to string.
             in[0] = fromHex(in[0]);
-	    in[0] = fromHex(in[0]);
+            in[0] = fromHex(in[0]);
             in[1] = fromHex(in[1]);
-	    in[1] = fromHex(in[1]);
+            in[1] = fromHex(in[1]);
+            //Append it to the ouput
             output = output + in[0] + in[1];
+            //Print it out for testing
             System.out.println(output);
             //commented section goes here
         }
-        outputBox.setText(output);
+        //resets the IVs
+        IVinput.setText("*");
+        IVdecode.setText("*");
+        //returns the output.
+        return output;
+    }
+    private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
+        //starts decoding. 
+        outputBox.setText(decodingAlgorithm(outputBox.getText()));
     }//GEN-LAST:event_jToggleButton1ActionPerformed
+
+    private void IVinputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_IVinputActionPerformed
+        // TODO add your handling code here: outputBox.getText()
+    }//GEN-LAST:event_IVinputActionPerformed
+
+    private void jToggleButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton2ActionPerformed
+        //Takes in input, and stores it in an image.
+        try {
+            //Generate new File
+            File img = new File("img.png");
+            //Convert it to buffered image
+            BufferedImage in = ImageIO.read(img);
+            //Instantiates a new string
+            String encryption = " ";
+            //Encodes the data
+            encryption = encodingAlgorithm(stegaInput.getText());
+            //Adds the code into the image
+            placeText(in, encryption);
+            //Sets the stegaInside box equal to whats currently inside the image.
+            stegaInside.setText(encryption);
+
+            saveImage(in, img);
+        } catch (Exception ie) {
+            System.err.println(ie);
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jToggleButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        //gets the data from the image and decodes it   
+        try {
+            //get the image
+            File img = new File("img.png");
+            System.out.println("here");
+            //converts it to buffered image
+            BufferedImage in = ImageIO.read(img);
+            System.out.println("here");
+            //create a new byte array
+            byte[] array;
+            System.out.println("here");
+            //get the data from the image
+            array = getData(in);
+            System.out.println("here");
+            //decodes the bye data.
+            byte[] array2; 
+            array2 = messageSize(array);
+            array = getText(array, array2);
+            System.out.println("here");
+            //INSERT REST OF CODE
+            stegaOutput.setText(decodingAlgorithm(new String(array)));
+        } catch (Exception ie) {
+            System.err.println(ie + "here");
+        }          // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -299,10 +597,20 @@ public class Security extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField IVdecode;
+    private javax.swing.JTextField IVinput;
     private javax.swing.JButton go;
     private javax.swing.JTextField input;
+    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JToggleButton jToggleButton1;
+    private javax.swing.JToggleButton jToggleButton2;
     private javax.swing.JTextArea outputBox;
+    private javax.swing.JTextArea stegaInput;
+    private javax.swing.JTextArea stegaInside;
+    private javax.swing.JTextArea stegaOutput;
     // End of variables declaration//GEN-END:variables
 }
